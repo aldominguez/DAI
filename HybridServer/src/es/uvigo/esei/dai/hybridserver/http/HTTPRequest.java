@@ -11,6 +11,7 @@ public class HTTPRequest {
 	public HTTPRequestMethod getMethod() {
 		// TODO Auto-generated method stub
 		return null;
+		//caca
 	}
 
 	public String getResourceChain() {
