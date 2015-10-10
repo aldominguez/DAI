@@ -1,57 +1,135 @@
 package es.uvigo.esei.dai.hybridserver.http;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.util.HashMap;
 import java.util.Map;
 
 public class HTTPRequest {
+	
+	private HTTPRequestMethod metodo;
+	private String resourceChain;
+	private String[] resourcePath;
+	private String resourceName;
+	private Map<String, String> resourceParameters;
+	private String httpVersion;
+	private Map<String, String> headerParameters;
+	private String content;
+	private int contentLenght;
+	
+	
 	public HTTPRequest(Reader reader) throws IOException, HTTPParseException {
+		
+		BufferedReader bf = new BufferedReader(reader);
+		String linea = bf.readLine();
+		
+		while(linea != null){
+			
+			String[] interrog = linea.split("[?]+");
+			String[] getPath=null;
+			String[] paramVer=null;
+			String[] param=null;
+			String[] aux=null;
+			
+			Map<String,String> resourceParameters=new HashMap<String,String>();
+			if(linea.contains("?")){
+				
+				
+				for (int i = 0; i < interrog.length; i++){
+					if(i == 0){
+				    getPath = interrog[i].split("[ ]+");
+					}
+					if(i == 1){
+					    paramVer = interrog[i].split("[ ]+");
+						}
+				}
+				param=paramVer[0].split("[&]+");
+				
+				
+				for (int i = 0; i < param.length; i++){
+					aux = param[i].split("[=]+");
+					resourceParameters.put(aux[0], aux[1]);
+				}
+				
+				
+				
+				for (Map.Entry<String, String> parame  : resourceParameters.entrySet()) {
+					System.out.println(parame.getKey()+"="+parame.getValue());
+				}
+			}else{
+				
+				for (int i = 0; i < interrog.length; i++){
+					if(i == 0){
+				    getPath = interrog[i].split("[ ]+");
+					}
+					if(i == 1){
+					    paramVer = interrog[i].split("[ ]+");
+						}
+				}
+				
+				String[] aux2=null;
+				Map<String,String> parametro2=new HashMap<String,String>();
+				
+				aux2=linea.split("[ :]+");
+				parametro2.put(aux2[0], aux2[1]);
+				
+				for (Map.Entry<String, String> parame  : parametro2.entrySet()) {
+					System.out.println(parame.getKey()+":"+parame.getValue());
+				}
+			}
+			
+			
+		
+		}
+		
+		
 	}
 
 	public HTTPRequestMethod getMethod() {
 		// TODO Auto-generated method stub
-		return null;
-		//caca
+		return this.metodo;
 	}
 
 	public String getResourceChain() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.resourceChain;
 	}
 
 	public String[] getResourcePath() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.resourcePath;
 	}
 
 	public String getResourceName() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.resourceName;
 	}
 
 	public Map<String, String> getResourceParameters() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.resourceParameters;
 	}
 
 	public String getHttpVersion() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.httpVersion;
 	}
 
 	public Map<String, String> getHeaderParameters() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.headerParameters;
 	}
 
 	public String getContent() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.content;
 	}
 
 	public int getContentLength() {
 		// TODO Auto-generated method stub
-		return -1;
+		return this.contentLenght;
 	}
 
 	@Override
@@ -69,4 +147,82 @@ public class HTTPRequest {
 
 		return sb.toString();
 	}
+	
+	public static void main(String[] args) throws IOException {
+		
+		
+		
+		String pruebax = "GET /hello/world.html?country=Spain&province=Ourense&city=Ourense HTTP/1.1\r\n" +
+				"Host: localhost\r\n" +
+				"Accept: text/html\r\n" +
+				"Accept-Encoding: gzip,deflate\r\n";
+		Reader r = new StringReader(pruebax);
+		BufferedReader br = new BufferedReader(r);
+		String prueba;
+		while((prueba = br.readLine()) != null){
+			
+			String[] interrog = prueba.split("[?]+");
+			String[] getPath=null;
+			String[] paramVer=null;
+			String[] param=null;
+			String[] aux=null;
+			
+			Map<String,String> parametro=new HashMap<String,String>();
+			if(prueba.contains("?")){
+				
+				//String[] prueba6=null;
+				
+				for (int i = 0; i < interrog.length; i++){
+					if(i == 0){
+				    getPath = interrog[i].split("[ ]+");
+					}
+					if(i == 1){
+					    paramVer = interrog[i].split("[ ]+");
+						}
+				}
+				param=paramVer[0].split("[&]+");
+				
+				
+				for (int i = 0; i < param.length; i++){
+					aux = param[i].split("[=]+");
+					parametro.put(aux[0], aux[1]);
+				}
+				
+				
+				
+				for (Map.Entry<String, String> parame  : parametro.entrySet()) {
+					System.out.println(parame.getKey()+"="+parame.getValue());
+				}
+			}else{
+				
+				for (int i = 0; i < interrog.length; i++){
+					if(i == 0){
+				    getPath = interrog[i].split("[ ]+");
+					}
+					if(i == 1){
+					    paramVer = interrog[i].split("[ ]+");
+						}
+				}
+				
+				String[] aux2=null;
+				Map<String,String> parametro2=new HashMap<String,String>();
+				
+				aux2=prueba.split("[ :]+");
+				parametro2.put(aux2[0], aux2[1]);
+				
+				for (Map.Entry<String, String> parame  : parametro2.entrySet()) {
+					System.out.println(parame.getKey()+":"+parame.getValue());
+				}
+			}
+			
+			
+		
+		}
+		
+
+	}
 }
+
+	
+
+
