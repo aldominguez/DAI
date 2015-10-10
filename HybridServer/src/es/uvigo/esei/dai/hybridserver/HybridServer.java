@@ -6,6 +6,7 @@ import java.util.Properties;
 public class HybridServer {
    public HybridServer() {
       // Constructor necesario para los tests de la primera semana
+	  //Prueba
    }
    
    public HybridServer(Map<String, String> pages) {
