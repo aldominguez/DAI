@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HTTPRequest {
-	
+	//Soy salva
 	private HTTPRequestMethod metodo;
 	private String resourceChain;
 	private String[] resourcePath;
