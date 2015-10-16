@@ -1,135 +1,140 @@
 package es.uvigo.esei.dai.hybridserver.http;
 
+/*
+ * ResourceChain -> con barra
+ * 
+ * */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class HTTPRequest {
-	//Soy salva
 	private HTTPRequestMethod metodo;
+	private String version;
+	private String resourceName;
 	private String resourceChain;
 	private String[] resourcePath;
-	private String resourceName;
-	private Map<String, String> resourceParameters;
-	private String httpVersion;
 	private Map<String, String> headerParameters;
-	private String content;
-	private int contentLenght;
-	
-	
+	private Map<String, String> resourceParameters;
+
 	public HTTPRequest(Reader reader) throws IOException, HTTPParseException {
-		
-		BufferedReader bf = new BufferedReader(reader);
-		String linea = bf.readLine();
-		
-		while(linea != null){
-			
-			String[] interrog = linea.split("[?]+");
-			String[] getPath=null;
-			String[] paramVer=null;
-			String[] param=null;
-			String[] aux=null;
-			
-			Map<String,String> resourceParameters=new HashMap<String,String>();
-			if(linea.contains("?")){
-				
-				
-				for (int i = 0; i < interrog.length; i++){
-					if(i == 0){
-				    getPath = interrog[i].split("[ ]+");
+
+		resourceParameters = new HashMap<String, String>();
+		headerParameters = new HashMap<String, String>();
+
+		BufferedReader br = new BufferedReader(reader);
+		try {
+			String linea;
+			while ((linea = br.readLine()) != null) {
+
+				// System.out.println(linea);
+				String[] space = linea.split(" "); // Inicializar y divido
+													// petición
+													// por espacios.
+
+				if (space[0].equals("GET")) {
+					metodo = HTTPRequestMethod.GET;
+				} else if (space[0].equals("POST")) {
+					metodo = HTTPRequestMethod.POST;
+				} else if (space[0].equals("PUT")) {
+					metodo = HTTPRequestMethod.PUT;
+				} else if (space[0].equals("DELETE")) {
+					metodo = HTTPRequestMethod.DELETE;
+				} else if (space[0].equals("TRACE")) {
+					metodo = HTTPRequestMethod.TRACE;
+				} else if (space[0].equals("HEAD")) {
+					metodo = HTTPRequestMethod.HEAD;
+				} else if (space[0].equals("CONNECT")) {
+					metodo = HTTPRequestMethod.CONNECT;
+				} else if (space[0].equals("OPTIONS")) {
+					metodo = HTTPRequestMethod.OPTIONS;
+				}
+
+				version = space[2];
+
+				if (space[1].contains("?")) {
+					String[] name = space[1].split("\\?"); // dividimos por
+															// interrogante
+					resourceChain = space[1]; // /hello/hola.txt?province=ourense
+					resourceName = name[0].substring(1); // hello/hola.txt
+					// aux2[1] split por & e tes o getResourceParameters
+					// almacendos.
+					// facer split por = e xa o tes
+
+					resourcePath = resourceName.split("/");
+					String[] ampers = name[1].split("&");
+
+					String[] aux;
+					for (int i = 0; i < ampers.length; i++) {
+						aux = ampers[i].split("[=]+");
+						resourceParameters.put(aux[0], aux[1]);
 					}
-					if(i == 1){
-					    paramVer = interrog[i].split("[ ]+");
-						}
+
+				} else {
+
+					resourceChain = space[1];
+					String name = space[1].substring(1);
+					resourceName = name;
+
+					resourcePath = name.split("/");
+
 				}
-				param=paramVer[0].split("[&]+");
-				
-				
-				for (int i = 0; i < param.length; i++){
-					aux = param[i].split("[=]+");
-					resourceParameters.put(aux[0], aux[1]);
+
+				if(linea.contains("Host")){
+					
 				}
-				
-				
-				
-				for (Map.Entry<String, String> parame  : resourceParameters.entrySet()) {
-					System.out.println(parame.getKey()+"="+parame.getValue());
-				}
-			}else{
-				
-				for (int i = 0; i < interrog.length; i++){
-					if(i == 0){
-				    getPath = interrog[i].split("[ ]+");
-					}
-					if(i == 1){
-					    paramVer = interrog[i].split("[ ]+");
-						}
-				}
-				
-				String[] aux2=null;
-				Map<String,String> parametro2=new HashMap<String,String>();
-				
-				aux2=linea.split("[ :]+");
-				parametro2.put(aux2[0], aux2[1]);
-				
-				for (Map.Entry<String, String> parame  : parametro2.entrySet()) {
-					System.out.println(parame.getKey()+":"+parame.getValue());
-				}
+
 			}
-			
-			
-		
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
-		
-		
+
 	}
 
 	public HTTPRequestMethod getMethod() {
-		// TODO Auto-generated method stub
-		return this.metodo;
+		return metodo;
 	}
 
 	public String getResourceChain() {
-		// TODO Auto-generated method stub
-		return this.resourceChain;
+		return resourceChain;
 	}
 
 	public String[] getResourcePath() {
-		// TODO Auto-generated method stub
-		return this.resourcePath;
+		return resourcePath;
 	}
 
 	public String getResourceName() {
 		// TODO Auto-generated method stub
-		return this.resourceName;
+		return resourceName;
 	}
 
 	public Map<String, String> getResourceParameters() {
 		// TODO Auto-generated method stub
-		return this.resourceParameters;
+		return resourceParameters;
 	}
 
 	public String getHttpVersion() {
-		// TODO Auto-generated method stub
-		return this.httpVersion;
+		return version;
 	}
 
 	public Map<String, String> getHeaderParameters() {
 		// TODO Auto-generated method stub
-		return this.headerParameters;
+		return headerParameters;
 	}
 
 	public String getContent() {
 		// TODO Auto-generated method stub
-		return this.content;
+		return null;
 	}
 
 	public int getContentLength() {
 		// TODO Auto-generated method stub
-		return this.contentLenght;
+		return -1;
 	}
 
 	@Override
@@ -147,82 +152,46 @@ public class HTTPRequest {
 
 		return sb.toString();
 	}
-	
+
 	public static void main(String[] args) throws IOException {
-		
-		
-		
-		String pruebax = "GET /hello/world.html?country=Spain&province=Ourense&city=Ourense HTTP/1.1\r\n" +
-				"Host: localhost\r\n" +
-				"Accept: text/html\r\n" +
-				"Accept-Encoding: gzip,deflate\r\n";
+		Map<String, String> parametro = new HashMap<String, String>();
+
+		String pruebax = "GET /hello/world.html?country=Spain&province=Ourense&city=Ourense HTTP/1.1\r\n"
+				+ "jidweijdweowedoiedwiewd";
+
 		Reader r = new StringReader(pruebax);
 		BufferedReader br = new BufferedReader(r);
-		String prueba;
-		while((prueba = br.readLine()) != null){
-			
-			String[] interrog = prueba.split("[?]+");
-			String[] getPath=null;
-			String[] paramVer=null;
-			String[] param=null;
-			String[] aux=null;
-			
-			Map<String,String> parametro=new HashMap<String,String>();
-			if(prueba.contains("?")){
-				
-				//String[] prueba6=null;
-				
-				for (int i = 0; i < interrog.length; i++){
-					if(i == 0){
-				    getPath = interrog[i].split("[ ]+");
-					}
-					if(i == 1){
-					    paramVer = interrog[i].split("[ ]+");
-						}
-				}
-				param=paramVer[0].split("[&]+");
-				
-				
-				for (int i = 0; i < param.length; i++){
-					aux = param[i].split("[=]+");
-					parametro.put(aux[0], aux[1]);
-				}
-				
-				
-				
-				for (Map.Entry<String, String> parame  : parametro.entrySet()) {
-					System.out.println(parame.getKey()+"="+parame.getValue());
-				}
-			}else{
-				
-				for (int i = 0; i < interrog.length; i++){
-					if(i == 0){
-				    getPath = interrog[i].split("[ ]+");
-					}
-					if(i == 1){
-					    paramVer = interrog[i].split("[ ]+");
-						}
-				}
-				
-				String[] aux2=null;
-				Map<String,String> parametro2=new HashMap<String,String>();
-				
-				aux2=prueba.split("[ :]+");
-				parametro2.put(aux2[0], aux2[1]);
-				
-				for (Map.Entry<String, String> parame  : parametro2.entrySet()) {
-					System.out.println(parame.getKey()+":"+parame.getValue());
-				}
-			}
-			
-			
-		
-		}
-		
 
+		if (pruebax.contains("?")) {
+
+			String[] prueba2;
+			String[] pruebaz;
+			pruebaz = pruebax.split(" ");
+			prueba2 = pruebaz[1].split("\\?");
+			// resourceChain = prueba2[0];
+			// String resourceName2 = prueba2[0];
+			// aux2[1] split por & e tes o getResourceParameters almacendos.
+			// facer split por = e xa o tes
+
+			// String ver[];
+			// ver = resourceName2.split("/");
+
+			// System.out.println(ver[1]);
+
+			String[] ampers = prueba2[1].split("&");
+
+			String[] aux;
+			for (int i = 0; i < ampers.length; i++) {
+				aux = ampers[i].split("[=]+");
+				parametro.put(aux[0], aux[1]);
+			}
+		}
+
+		Iterator it = parametro.entrySet().iterator();
+
+		while (it.hasNext()) {
+			Map.Entry e = (Map.Entry) it.next();
+			System.out.println(e.getKey() + " " + e.getValue());
+		}
 	}
 }
-
-	
-
-
