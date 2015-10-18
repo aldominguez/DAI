@@ -13,6 +13,7 @@ public class HTTPResponse {
 	public HTTPResponseStatus getStatus() {
 		// TODO Auto-generated method stub
 		return null;
+		
 	}
 
 	public void setStatus(HTTPResponseStatus status) {
