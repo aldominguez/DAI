@@ -1,243 +1,213 @@
 package es.uvigo.esei.dai.hybridserver.http;
 
-import static es.uvigo.esei.dai.hybridserver.http.HTTPHeaders.CONTENT_LENGTH;
-import static es.uvigo.esei.dai.hybridserver.http.HTTPHeaders.CONTENT_TYPE;
-import static org.junit.Assert.assertEquals;
-
-/*
- * ResourceChain -> con barra
- * 
- * */
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.net.URLDecoder;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
+
+import java.net.URLDecoder;
+import java.util.LinkedHashMap;
+
+//import sun.org.mozilla.javascript.internal.Undefined;
 
 public class HTTPRequest {
-	private HTTPRequestMethod metodo;
-	private String version;
-	private String resourceName;
-	private String resourceChain;
-	private String[] resourcePath;
-	private Map<String, String> headerParameters;
-	private Map<String, String> resourceParameters;
-	private String content;
-	private int contentLength;
+    private HTTPRequestMethod metodo;
+    private String version;
+    private String resourceName;
+    private String resourceChain;
+    private String[] resourcePath;
+    private Map<String, String> headerParameters;
+    private Map<String, String> resourceParameters;
+    private String content;
+    private int contentLength;
 
-	public HTTPRequest(Reader reader) throws IOException, HTTPParseException {
+    public HTTPRequest(Reader reader) throws IOException, HTTPParseException {
 
-		resourceParameters = new HashMap<String, String>();
-		headerParameters = new HashMap<String, String>();
-		contentLength = 0;
-		
+        resourceParameters = new LinkedHashMap<String, String>();
+        headerParameters = new LinkedHashMap<String, String>();
+        contentLength = 0;
 
-		BufferedReader br = new BufferedReader(reader);
-		try {
-			String linea;
+        BufferedReader br = new BufferedReader(reader);
+        try {
+            String linea;
 
-			linea = br.readLine();
-			// System.out.println(linea);
-			String[] space = linea.split(" "); // Inicializar y divido
-												// petición
-												// por espacios.
+            linea = br.readLine();
+            // System.out.println(linea);
+            String[] space = linea.split("\\s");// Inicializar y divido
+                                                // petición
+                                                // por espacios.
+            System.out.println(space.length);
+            if (space.length < 3)
+                throw new HTTPParseException();
 
-			if (space[0].equals("GET")) {
-				metodo = HTTPRequestMethod.GET;
-			} else if (space[0].equals("POST")) {
-				metodo = HTTPRequestMethod.POST;
-			} else if (space[0].equals("PUT")) {
-				metodo = HTTPRequestMethod.PUT;
-			} else if (space[0].equals("DELETE")) {
-				metodo = HTTPRequestMethod.DELETE;
-			} else if (space[0].equals("TRACE")) {
-				metodo = HTTPRequestMethod.TRACE;
-			} else if (space[0].equals("HEAD")) {
-				metodo = HTTPRequestMethod.HEAD;
-			} else if (space[0].equals("CONNECT")) {
-				metodo = HTTPRequestMethod.CONNECT;
-			} else if (space[0].equals("OPTIONS")) {
-				metodo = HTTPRequestMethod.OPTIONS;
-			}
+            if (space[0].equals("GET")) {
+                metodo = HTTPRequestMethod.GET;
+            } else if (space[0].equals("POST")) {
+                metodo = HTTPRequestMethod.POST;
+            } else if (space[0].equals("PUT")) {
+                metodo = HTTPRequestMethod.PUT;
+            } else if (space[0].equals("DELETE")) {
+                metodo = HTTPRequestMethod.DELETE;
+            } else if (space[0].equals("TRACE")) {
+                metodo = HTTPRequestMethod.TRACE;
+            } else if (space[0].equals("HEAD")) {
+                metodo = HTTPRequestMethod.HEAD;
+            } else if (space[0].equals("CONNECT")) {
+                metodo = HTTPRequestMethod.CONNECT;
+            } else if (space[0].equals("OPTIONS")) {
+                metodo = HTTPRequestMethod.OPTIONS;
+            }
 
-			version = space[2];
+            version = space[2];
 
-			if (space[1].contains("?")) {
-				String[] name = space[1].split("\\?"); // dividimos por
-														// interrogante
-				resourceChain = space[1]; // /hello/hola.txt?province=ourense
-				resourceName = name[0].substring(1); // hello/hola.txt
-				// aux2[1] split por & e tes o getResourceParameters
-				// almacendos.
-				// facer split por = e xa o tes
+            if (space[1].contains("?")) {
+                String[] name = space[1].split("\\?"); // dividimos por
+                                                        // interrogante
+                resourceChain = space[1]; // /hello/hola.txt?province=ourense
+                resourceName = name[0].substring(1); // hello/hola.txt
+                // aux2[1] split por & e tes o getResourceParameters
+                // almacendos.
+                // facer split por = e xa o tes
 
-				resourcePath = resourceName.split("/");
-				String[] aux;
-				String[] ampers;
-				if (name[1].contains("&")) {
-					ampers = name[1].split("&");
+                resourcePath = resourceName.split("/");
+                String[] aux;
+                String[] ampers;
+                if (name[1].contains("&")) {
+                    ampers = name[1].split("&");
 
-					for (int i = 0; i < ampers.length; i++) {
-						aux = ampers[i].split("[=]+");
-						resourceParameters.put(aux[0], aux[1]);
-					}
-				} else {
-					aux = name[1].split("[=]+");
-					resourceParameters.put(aux[0], aux[1]);
+                    for (int i = 0; i < ampers.length; i++) {
+                        aux = ampers[i].split("[=]+");
+                        resourceParameters.put(aux[0], aux[1]);
+                    }
+                } else {
+                    aux = name[1].split("[=]+");
+                    resourceParameters.put(aux[0], aux[1]);
 
-				}
+                }
 
-			} else {
+            } else {
 
-				resourceChain = space[1];
-				String name = space[1].substring(1);
-				resourceName = name;
+                resourceChain = space[1];
+                String name;
+                if (space[1].equals("/")) {
 
-				resourcePath = name.split("/");
+                    name = space[1];
+                    resourceName = name.substring(1);
+                    resourcePath = name.split("/");
+                } else {
+                    name = space[1].substring(1);
+                    resourceName = name;
+                    resourcePath = name.split("/");
+                }
 
-			}
+            }
+            int cont = 0;
+            while (!(linea = br.readLine()).isEmpty()) {
+                space = linea.split(": ");
 
-			while ((linea = br.readLine()) != null && !(linea.isEmpty())) {
-				
+                if (space.length < 2 && cont == 0) {
+                    cont++;
+                    throw new HTTPParseException();
+                }
 
-				if (linea.contains("Content-Length:")) {
-					space = linea.split(": ");
-					contentLength = Integer.parseInt(space[1]);
-					headerParameters.put(space[0], space[1]);
-				} else {
-					space = linea.split(":");
-					headerParameters.put(space[0], space[1].replace(" ", ""));
-				}
+                if (space[0].contains("Content-Length")) {
+                    contentLength = Integer.parseInt(space[1]);
+                    headerParameters.put(space[0], space[1]);
 
-				if (contentLength != 0) {
-					char[] buff = new char[contentLength];
-					br.read(buff);
-					String c = new String(buff);
-					content = c;
-				}
+                } else {
+                    cont++;
 
-				String type = headerParameters.get("Content-Type");
+                    headerParameters.put(space[0], space[1]);
+                }
 
-				if (type != null && type.startsWith("application/x-www-form-urlencoded")) {
-					content = URLDecoder.decode(content, "UTF-8");
-				}
+            }
 
-				String aux3 = content.replaceAll("&", ", ");
+            if (this.contentLength != 0) {
+                char[] buff = new char[contentLength];
+                br.read(buff);
+                String c = new String(buff);
+                content = c;
 
-				String[] auxCont = aux3.split(", ");
-				for (int i = 0; i < auxCont.length; i++) {
-					String[] auxBucl = auxCont[i].split("[=]+");
-					resourceParameters.put(auxBucl[0], auxBucl[1]);
-				}
+                String type = headerParameters.get("Content-Type");
 
-			}
+                if (type != null && type.startsWith("application/x-www-form-urlencoded")) {
+                    content = URLDecoder.decode(content, "UTF-8");
+                }
 
-		} catch (Exception e) {
-			System.err.println("Error parsing.");
-		}
+                String aux3 = content.replaceAll("&", ", ");
 
-	}
+                String[] auxCont = aux3.split(", ");
+                for (int i = 0; i < auxCont.length; i++) {
+                    String[] auxBucl = auxCont[i].split("[=]+");
+                    resourceParameters.put(auxBucl[0], auxBucl[1]);
+                }
+            }
 
-	public HTTPRequestMethod getMethod() {
-		return metodo;
-	}
+        } catch (Exception e) {
+            throw new HTTPParseException();
+        }
 
-	public String getResourceChain() {
-		return resourceChain;
-	}
+    }
 
-	public String[] getResourcePath() {
-		return resourcePath;
-	}
+    public HTTPRequestMethod getMethod() {
+        return metodo;
+    }
 
-	public String getResourceName() {
-		// TODO Auto-generated method stub
-		return resourceName;
-	}
+    public String getResourceChain() {
+        return resourceChain;
+    }
 
-	public Map<String, String> getResourceParameters() {
-		// TODO Auto-generated method stub
-		return resourceParameters;
-	}
+    public String[] getResourcePath() {
+        return resourcePath;
+    }
 
-	public String getHttpVersion() {
-		return version;
-	}
+    public String getResourceName() {
+        // TODO Auto-generated method stub
+        return resourceName;
+    }
 
-	public Map<String, String> getHeaderParameters() {
-		// TODO Auto-generated method stub
-		return headerParameters;
-	}
+    public Map<String, String> getResourceParameters() {
+        // TODO Auto-generated method stub
+        return resourceParameters;
+    }
 
-	public String getContent() {
-		// TODO Auto-generated method stub
-		return content;
-	}
+    public String getHttpVersion() {
+        return version;
+    }
 
-	public int getContentLength() {
-		// TODO Auto-generated method stub
-		return contentLength;
-	}
+    public Map<String, String> getHeaderParameters() {
+        // TODO Auto-generated method stub
+        return headerParameters;
+    }
 
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder(this.getMethod().name()).append(' ').append(this.getResourceChain())
-				.append(' ').append(this.getHttpVersion()).append("\r\n");
+    public String getContent() {
+        // TODO Auto-generated method stub
+        return content;
+    }
 
-		for (Map.Entry<String, String> param : this.getHeaderParameters().entrySet()) {
-			sb.append(param.getKey()).append(": ").append(param.getValue()).append("\r\n");
-		}
+    public int getContentLength() {
+        // TODO Auto-generated method stub
+        return contentLength;
+    }
 
-		if (this.getContentLength() > 0) {
-			sb.append("\n").append(this.getContent());
-		}
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder(this.getMethod().name()).append(' ').append(this.getResourceChain())
+                .append(' ').append(this.getHttpVersion()).append("\r\n");
 
-		return sb.toString();
-	}
+        for (Map.Entry<String, String> param : this.getHeaderParameters().entrySet()) {
+            sb.append(param.getKey()).append(": ").append(param.getValue()).append("\r\n");
+        }
 
-	public static void main(String[] args) throws IOException {
-		Map<String, String> parametro = new HashMap<String, String>();
+        if (this.getContentLength() > 0) {
+            sb.append("\r\n").append(this.getContent());
+        }
 
-		String pruebax = "GET /hello/world.html?country=Spain&province=Ourense&city=Ourense HTTP/1.1\r\n"
-				+ "jidweijdweowedoiedwiewd";
+        return sb.toString();
+    }
 
-		Reader r = new StringReader(pruebax);
-		BufferedReader br = new BufferedReader(r);
-
-		if (pruebax.contains("?")) {
-
-			String[] prueba2;
-			String[] pruebaz;
-			pruebaz = pruebax.split(" ");
-			prueba2 = pruebaz[1].split("\\?");
-			// resourceChain = prueba2[0];
-			// String resourceName2 = prueba2[0];
-			// aux2[1] split por & e tes o getResourceParameters almacendos.
-			// facer split por = e xa o tes
-
-			// String ver[];
-			// ver = resourceName2.split("/");
-
-			// System.out.println(ver[1]);
-
-			String[] ampers = prueba2[1].split("&");
-
-			String[] aux;
-			for (int i = 0; i < ampers.length; i++) {
-				aux = ampers[i].split("[=]+");
-				parametro.put(aux[0], aux[1]);
-			}
-		}
-
-		Iterator it = parametro.entrySet().iterator();
-
-		while (it.hasNext()) {
-			Map.Entry e = (Map.Entry) it.next();
-			System.out.println(e.getKey() + " " + e.getValue());
-		}
-	}
+    public static void main(String[] args) throws IOException {
+    }
 }
+
+
