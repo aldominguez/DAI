@@ -1,9 +1,15 @@
 package es.uvigo.esei.dai.hybridserver;
 
+<<<<<<< HEAD
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collections;
+=======
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+>>>>>>> a5c98cbff981c0f3615307ff7147a2852e96d25a
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
