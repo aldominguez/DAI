@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.util.Map;
 import java.util.Properties;
 
+//import es.uvigo.esei.dai.hybridserver.MainRunnable;
+
 
 
 public class ServiceThread implements Runnable {
@@ -19,24 +21,23 @@ public class ServiceThread implements Runnable {
 
 	public ServiceThread(Socket socket, Map<String, String> pages) {
 		this.socket = socket;
-		// this.md = new MemoryDao(pages);
 	}
 
 	public ServiceThread(Socket clientSocket) {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 
 		try (Socket socket = this.socket) {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			try {
-				HTTPRequest request = new HTTPRequest(reader);
-				HTTPResponse response = new HTTPResponse();
-				response.setVersion(request.getHttpVersion());
+				HTTPRequest request = new HTTPRequest(reader); // Recibo Request del HybridServer y almaceno.
+				DAO MemoryDAO = new HTMLDao();  // Instancio la clase que accede a la base de datos.
+				Controller control = new Controller(MemoryDAO); // Creo una instancia que le paso un MemoryDAO (objeto que puede acceder a la base de datos) 
+				HTTPResponse response = control.getDatos(request);
 				response.print(new PrintWriter(socket.getOutputStream()));
+				
 
 			} catch (HTTPParseException e) {
 				e.printStackTrace();
@@ -49,4 +50,5 @@ public class ServiceThread implements Runnable {
 		}
 
 	}
+	
 }
