@@ -1,15 +1,9 @@
 package es.uvigo.esei.dai.hybridserver;
 
-<<<<<<< HEAD
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collections;
-=======
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
->>>>>>> a5c98cbff981c0f3615307ff7147a2852e96d25a
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -17,37 +11,34 @@ import java.util.concurrent.Executors;
 
 import es.uvigo.esei.dai.hybridserver.http.ServiceThread;
 
-
-
-
 public class HybridServer {
-	private static final int SERVICE_PORT = 8888;
+	private static int SERVICE_PORT = 8888;
 	private Thread serverThread;
 	private boolean stop;
-	private int numClientes;
+	private int numClientes = 50;
 	private Map<String, String> pages;
 	private Properties prop;
 //	DATOS DE LA BASE DE DATOS
 //	db.url=jdbc:mysql://localhost:3306/hstestdb
 //	db.user=hsdb
 //	db.password=hsdbpass
+//	Connection connection = new DriverManager.getConnection("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass");
 	
-
 	public HybridServer() {
 		
 		this(Collections.<String, String> emptyMap()); //Primera Semana
-		System.out.println("hola");
 	}
 	
 	public HybridServer(Map<String, String> pages) { //Segunda Semana
 		this.pages = pages; 
-		this.numClientes = Integer.parseInt(pages.get("numClients"));
-		System.out.println(numClientes);
+		this.prop = null;
 	}
 
-	public HybridServer(Properties properties) {
+	public HybridServer(Properties properties) { //Tercera Semana
 		this.numClientes = Integer.parseInt(properties.getProperty("numClients"));
 		this.prop = properties;
+		this.pages = null;
+		
 		
 	}
 

@@ -7,7 +7,7 @@ public interface DAO {
 
 	public abstract boolean containsUUID(String UUID) throws Exception;
 
-	//public abstract void postPage(HTML content) throws Exception;
+	public abstract void postPage(HTML content) throws Exception;
 
 	public abstract void deletePage(String UUID) throws Exception;
 
