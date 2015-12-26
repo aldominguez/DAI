@@ -4,5 +4,5 @@ Proyecto base para la realización de la práctica de la asignatura Desarrollo d
 
 Autores Grupo 2.9
 =================
-Aitor López Domínguez		44484130Z
-Salvador Sánchez Méndez		76826530K
+Aitor López Domínguez
+Salvador Sánchez Méndez
